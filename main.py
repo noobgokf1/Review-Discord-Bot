@@ -7,8 +7,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()  
-TOKEN = ""
-
+TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
 conn = sqlite3.connect('reviews.db')
 c = conn.cursor()
