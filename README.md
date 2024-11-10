@@ -20,6 +20,7 @@ The Discord Review Bot is a system that enables users to review each other withi
 
 ## Demo
 ![Discord Review Bot Demo](./assets/demo.gif)
+![Discord Review Bot Web Demo](./assets/demo1.gif)
 
 ## Installation 🛠️
 
