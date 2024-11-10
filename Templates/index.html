@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Bot Reviews</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212; 
+            color: #e0e0e0; 
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #bb86fc; 
+        }
+        #tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            background-color: #1e1e1e; 
+            border: 1px solid #444; 
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab:hover {
+            background-color: #3e3e3e; 
+        }
+        .active {
+            background-color: #bb86fc;
+            color: #121212; 
+            font-weight: bold;
+        }
+        .review {
+            background-color: #1e1e1e; 
+            border: 1px solid #444; 
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .review:hover {
+            background-color: #333; 
+        }
+        .rating {
+            color: gold;
+            font-weight: bold;
+        }
+        input[type="text"], select, button {
+            background-color: #222; 
+            color: #e0e0e0; 
+            border: 1px solid #444; 
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #bb86fc; 
+            color: #121212; 
+        }
+        #user-search, #guild-search {
+            display: none; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Reviews</h1>
+    
+    <div id="tabs">
+        <div id="search-by-userid" class="tab active">Search By UserId</div>
+        <div id="search-by-guild" class="tab">Search By Guild</div>
+    </div>
+
+    <div id="user-search">
+        <input type="text" id="user-id-input" placeholder="Enter User ID">
+        <button id="user-search-button">Search</button>
+        <div id="user-reviews-container"></div>
+    </div>
+
+    <div id="guild-search">
+        <label for="guild-select">Choose a guild:</label>
+        <select id="guild-select">
+            <option value="">--Please choose a guild--</option>
+        </select>
+        <button id="load-reviews-button">Load Reviews</button>
+        <div id="reviews-container"></div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const reviewsContainer = document.getElementById('reviews-container');
+        const userReviewsContainer = document.getElementById('user-reviews-container');
+        const guildSelect = document.getElementById('guild-select');
+        const userIdInput = document.getElementById('user-id-input');
+
+        document.getElementById('search-by-userid').addEventListener('click', function() {
+            document.getElementById('user-search').style.display = 'block';
+            document.getElementById('guild-search').style.display = 'none';
+            this.classList.add('active');
+            document.getElementById('search-by-guild').classList.remove('active');
+        });
+
+        document.getElementById('search-by-guild').addEventListener('click', function() {
+            document.getElementById('guild-search').style.display = 'block';
+            document.getElementById('user-search').style.display = 'none';
+            this.classList.add('active');
+            document.getElementById('search-by-userid').classList.remove('active');
+        });
+
+        fetch('/guilds')
+            .then(response => response.json())
+            .then(guilds => {
+                guilds.forEach(guild => {
+                    const option = document.createElement('option');
+                    option.value = guild;
+                    option.textContent = guild;
+                    guildSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching guilds:', error));
+
+        document.getElementById('user-search-button').addEventListener('click', function() {
+            const userId = userIdInput.value.trim();
+            if (!userId) return;
+
+            fetch(`/reviews?userId=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    userReviewsContainer.innerHTML = ''; 
+                    const reviewerReviews = data.filter(review => review.reviewer_id === userId);
+                    const revieweeReviews = data.filter(review => review.reviewee_id === userId);
+
+                    if (reviewerReviews.length > 0) {
+                        userReviewsContainer.innerHTML += `<h3>Reviews Written:</h3>`;
+                        reviewerReviews.forEach(review => {
+                            const reviewDiv = renderReview(review); 
+                            userReviewsContainer.appendChild(reviewDiv); 
+                        });
+                    }
+
+                    if (revieweeReviews.length > 0) {
+                        userReviewsContainer.innerHTML += `<h3>Reviews About:</h3>`;
+                        revieweeReviews.forEach(review => {
+                            const reviewDiv = renderReview(review);
+                            userReviewsContainer.appendChild(reviewDiv); 
+                        });
+                    }
+
+                    if (reviewerReviews.length === 0 && revieweeReviews.length === 0) {
+                        userReviewsContainer.innerHTML = `<p>No reviews found.</p>`;
+                    }
+                })
+                .catch(error => console.error('Error fetching user reviews:', error));
+        });
+
+        document.getElementById('load-reviews-button').addEventListener('click', function() {
+            const selectedGuild = guildSelect.value;
+            if (!selectedGuild) return;
+
+            fetch(`/reviews?guild=${selectedGuild}`)
+                .then(response => response.json())
+                .then(data => {
+                    reviewsContainer.innerHTML = ''; 
+                    if (data.length === 0) {
+                        reviewsContainer.innerHTML = `<p>No reviews found for the selected guild.</p>`;
+                    } else {
+                        data.forEach(review => {
+                            const reviewDiv = renderReview(review); 
+                            reviewsContainer.appendChild(reviewDiv);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching reviews:', error));
+        });
+
+        function renderReview(review) {
+            const reviewDiv = document.createElement('div');
+            reviewDiv.classList.add('review');
+            reviewDiv.innerHTML = `
+                <p><strong>Reviewer:</strong> ${review.reviewer || 'Unknown'}</p>
+                <p><strong>Reviewee:</strong> ${review.reviewee || 'Unknown'}</p>
+                <p><strong>Rating:</strong> <span class="rating">${review.rating} ⭐</span></p>
+                <p><strong>Review:</strong> ${review.review}</p>
+            `;
+            return reviewDiv; 
+        }
+    </script>
+</body>
+</html>
