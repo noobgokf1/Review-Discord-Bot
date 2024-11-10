@@ -38,7 +38,7 @@ The Discord Review Bot is a system that enables users to review each other withi
 
 3. Create a `.env` file and add your Discord bot token:
     ```
-    TOKEN=your-discord-bot-token-here
+    DISCORD_BOT_TOKEN=your-discord-bot-token-here
     ```
 
 4. Run the bot and Flask server:
