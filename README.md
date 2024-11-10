@@ -28,7 +28,7 @@ The Discord Review Bot is a system that enables users to review each other withi
 
 1. Clone this repository:
     ```bash
-    git clone https://github.com/yourusername/discord-review-bot.git
+    git clone https://github.com/noobgokf1/Review-Discord-Bot
     ```
 
 2. Install dependencies:
