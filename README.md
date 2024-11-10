@@ -99,5 +99,5 @@ Contributions are welcome! If you'd like to improve or add features to the bot, 
 - You can create issues to report bugs, suggest improvements, or request features.
 - Fork the repository and submit a pull request to contribute.
 ### License 📝
-This project is licensed under the MIT License - see the License file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
